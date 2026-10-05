@@ -1,0 +1,54 @@
+// TRADUÇÕES: muda o rótulo mostrado na tela, mantendo o valor original da API.
+// Os comentários são explicações para estudo: não são executados pelo Dart.
+// Leia primeiro o objetivo da função e depois acompanhe as instruções abaixo dela.
+
+// Tradução apenas dos rótulos. O valor original continua indo para a API.
+// Opções novas/desconhecidas aparecem no idioma original, sem inventar dados.
+String labelPt(String value) =>
+    const {
+      'Alcoholic': 'Com álcool',
+      'Non alcoholic': 'Sem álcool',
+      'Non_Alcoholic': 'Sem álcool',
+      'Optional alcohol': 'Álcool opcional',
+      'Optional_alcohol': 'Álcool opcional',
+      'Cocktail': 'Coquetel',
+      'Ordinary Drink': 'Drink tradicional',
+      'Shake': 'Batida',
+      'Other / Unknown': 'Outros',
+      'Cocoa': 'Chocolate',
+      'Shot': 'Dose',
+      'Coffee / Tea': 'Café / Chá',
+      'Homemade Liqueur': 'Licor caseiro',
+      'Punch / Party Drink': 'Ponche / Festa',
+      'Beer': 'Cerveja',
+      'Soft Drink': 'Refrigerante',
+      'Cocktail glass': 'Taça de coquetel',
+      'Highball glass': 'Copo alto',
+      'Collins glass': 'Copo Collins',
+      'Old-fashioned glass': 'Copo baixo',
+      'Shot glass': 'Copo de dose',
+      'Wine Glass': 'Taça de vinho',
+      'Champagne flute': 'Taça de champanhe',
+      'Margarita glass': 'Taça de margarita',
+      'Martini Glass': 'Taça de martíni',
+      'Beer mug': 'Caneca de cerveja',
+      'Coffee mug': 'Caneca de café',
+      'Pitcher': 'Jarra',
+      'Punch bowl': 'Tigela de ponche',
+      'Whiskey sour glass': 'Taça de uísque sour',
+      'Hurricane glass': 'Taça Hurricane',
+      'Brandy snifter': 'Taça de conhaque',
+      'White wine glass': 'Taça de vinho branco',
+      'Nick and Nora Glass': 'Taça Nick e Nora',
+      'Beer pilsner': 'Copo de cerveja Pilsner',
+      'Pint glass': 'Copo de pint',
+      'Jar': 'Pote',
+      'Coupe Glass': 'Taça coupe',
+      'Irish coffee cup': 'Taça de café irlandês',
+      'Copper Mug': 'Caneca de cobre',
+      'Mason jar': 'Pote de vidro',
+      'Balloon Glass': 'Taça balão',
+      'Yes': 'Sim',
+      'No': 'Não',
+    }[value] ??
+    value;

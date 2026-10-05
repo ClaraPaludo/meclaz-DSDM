@@ -1,0 +1,29 @@
+# Nome interno do pacote; os imports dos testes usam este mesmo nome.
+name: meclaz_drinks
+# Descrição breve do projeto para ferramentas Dart/Flutter.
+description: Base didática em Flutter para consultar a TheCocktailDB.
+# none evita publicação acidental como pacote no pub.dev.
+publish_to: none
+# Versão do aplicativo + número de compilação.
+version: 1.0.0+1
+# Versões mínimas e máximas aceitas das ferramentas.
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+  flutter: '>=3.35.0'
+# Pacotes usados para executar o aplicativo.
+dependencies:
+  flutter:
+    sdk: flutter
+  # Traduções dos componentes padrão do Flutter.
+  flutter_localizations:
+    sdk: flutter
+  # Pacote que envia as consultas GET para a API.
+  http: ^1.6.0
+# Pacotes usados durante desenvolvimento e testes.
+dev_dependencies:
+  # Ferramentas para os testes de dados e de interface.
+  flutter_test:
+    sdk: flutter
+flutter:
+  # Inclui os ícones Material utilizados nos botões e nas telas.
+  uses-material-design: true

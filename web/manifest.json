@@ -1,0 +1,10 @@
+{
+  "name": "Meclaz • Drinks",
+  "short_name": "Meclaz",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#D85920",
+  "description": "Base de estudos Flutter com TheCocktailDB",
+  "prefer_related_applications": false
+}
