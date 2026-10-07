@@ -48,9 +48,7 @@ class CocktailApi {
         .toSet()
         .toList();
 
-    if (names.length < 2) {
-      return [];
-    }
+    if (names.length < 2) return [];
 
     final lists = await Future.wait(names.map((name) => filter('i', name)));
 
@@ -143,9 +141,9 @@ class CocktailApi {
 
   // Busca por um único critério: kind informa o tipo e value informa a opção escolhida.
   Future<List<DrinkSummary>> filter(String kind, String value) async {
-    final filterValue = value.trim().replaceAll(' ', '_');
-
-    final rows = await _get('filter.php', {kind: filterValue});
+    final rows = await _get('filter.php', {
+      kind: value.trim().replaceAll(' ', '_'),
+    });
 
     return rows.map(DrinkSummary.fromJson).toList();
   }
