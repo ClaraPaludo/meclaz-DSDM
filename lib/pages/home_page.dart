@@ -13,6 +13,7 @@ import '../widgets/shared.dart';
 import 'drinks_page.dart';
 // Disponibiliza esta página para abri-la a partir deste arquivo.
 import 'ingredients_page.dart';
+import 'discover_page.dart';
 
 // Define um componente com estado: seus dados podem mudar durante o uso.
 class HomePage extends StatefulWidget {
@@ -70,6 +71,15 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
+        TextButton(
+          onPressed: () => setState(() => tab = 2),
+          child: Text(
+            'Descobrir',
+            style: TextStyle(
+              fontWeight: tab == 2 ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
         // Construtor: recebe os dados deste componente. const permite instâncias constantes.
         const SizedBox(width: 12),
       ],
@@ -82,6 +92,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         DrinksPage(api: widget.api),
         IngredientsPage(api: widget.api),
+        DiscoverPage(api: widget.api),
       ],
     ),
   );

@@ -39,6 +39,30 @@ class CocktailApi {
     // Usa o cliente recebido ou cria um novo cliente HTTP quando ele não foi passado.
     : _client = client ?? http.Client();
 
+  Future<List<DrinkSummary>> filterByIngredients(
+    List<String> ingredients,
+  ) async {
+    final names = ingredients
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList();
+
+    if (names.length < 2) {
+      return [];
+    }
+
+    final lists = await Future.wait(names.map((name) => filter('i', name)));
+
+    final commonIds = lists.first.map((drink) => drink.id).toSet();
+
+    for (final list in lists.skip(1)) {
+      commonIds.retainAll(list.map((drink) => drink.id).toSet());
+    }
+
+    return lists.first.where((drink) => commonIds.contains(drink.id)).toList();
+  }
+
   // Método interno comum às consultas. Entrega no futuro uma lista de mapas JSON.
   Future<List<Map<String, dynamic>>> _get(
     // Nome do arquivo da API, como search.php ou lookup.php.
@@ -83,17 +107,17 @@ class CocktailApi {
         throw const ApiException('Formato de dados inesperado.');
       // Converte cada item em um mapa com chaves de texto e reúne todos em uma lista.
       return rows.map((row) => Map<String, dynamic>.from(row as Map)).toList();
-    // Reconhece os erros que já receberam uma mensagem própria neste serviço.
+      // Reconhece os erros que já receberam uma mensagem própria neste serviço.
     } on ApiException {
       // Repassa o erro já tratado, conservando a mensagem específica.
       rethrow;
-    // Trata especificamente quando o tempo máximo da consulta se esgota.
+      // Trata especificamente quando o tempo máximo da consulta se esgota.
     } on TimeoutException {
       throw const ApiException('A consulta demorou demais. Tente novamente.');
-    // Trata especificamente uma resposta que não pôde ser interpretada como JSON.
+      // Trata especificamente uma resposta que não pôde ser interpretada como JSON.
     } on FormatException {
       throw const ApiException('Não foi possível ler a resposta da API.');
-    // Captura uma falha para convertê-la em uma mensagem em vez de deixar a tela sem tratamento.
+      // Captura uma falha para convertê-la em uma mensagem em vez de deixar a tela sem tratamento.
     } catch (_) {
       throw const ApiException(
         'Não foi possível consultar os dados. Confira sua conexão e tente novamente.',
@@ -118,10 +142,13 @@ class CocktailApi {
   }
 
   // Busca por um único critério: kind informa o tipo e value informa a opção escolhida.
-  Future<List<DrinkSummary>> filter(String kind, String value) async =>
-      (await _get('filter.php', {
-        kind: value,
-      })).map(DrinkSummary.fromJson).toList();
+  Future<List<DrinkSummary>> filter(String kind, String value) async {
+    final filterValue = value.trim().replaceAll(' ', '_');
+
+    final rows = await _get('filter.php', {kind: filterValue});
+
+    return rows.map(DrinkSummary.fromJson).toList();
+  }
 
   // Cache em memória: evita baixar as mesmas opções ao trocar de aba.
   // Não é cache permanente: é apagado ao fechar o aplicativo.
@@ -181,6 +208,11 @@ class CocktailApi {
   Future<Ingredient?> ingredientById(String id) async {
     final rows = await _get('lookup.php', {'iid': id}, root: 'ingredients');
     return rows.isEmpty ? null : Ingredient.fromJson(rows.first);
+  }
+
+  Future<Drink?> randomDrink() async {
+    final rows = await _get('random.php', {});
+    return rows.isEmpty ? null : Drink.fromJson(rows.first);
   }
 
   // Monta o endereço da foto sem fazer a consulta. static permite chamar pela classe.

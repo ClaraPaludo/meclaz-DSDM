@@ -145,11 +145,13 @@ class _IngredientDetailPageState extends State<IngredientDetailPage> {
         // Construtor: recebe os dados deste componente. const permite instâncias constantes.
         const SizedBox(height: 28),
         FilledButton(
-          // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
-          onPressed: () =>
-              // Salva mudanças no estado e solicita ao Flutter que atualize a interface.
-              setState(() => drinks = widget.api.filter('i', widget.name)),
-          // Define o único componente filho que ocupa este espaço.
+          // Ação executada quando o botão é tocado.
+          onPressed: () {
+            setState(() {
+              drinks = widget.api.filter('i', widget.name);
+            });
+          },
+          // Texto exibido no botão.
           child: Text('Ver drinks com ${widget.name}'),
         ),
         // Só inclui este grupo de componentes depois que uma busca de drinks foi iniciada.
