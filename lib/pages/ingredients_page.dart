@@ -63,7 +63,6 @@ class _IngredientsPageState extends State<IngredientsPage> {
               .then((items) => items.map((e) => e.name).toList());
   });
   // Indica que implementamos um método previsto pela classe de origem do Flutter/Dart.
-  @override
   // Descreve a interface. context informa em que lugar da árvore de widgets estamos.
   @override
   Widget build(BuildContext context) => DefaultTabController(
@@ -84,7 +83,7 @@ class _IngredientsPageState extends State<IngredientsPage> {
           ],
         ),
         SizedBox(
-          height: 650,
+          height: MediaQuery.of(context).size.height * 0.65,
           child: TabBarView(
             children: [
               _catalogTab(),
@@ -96,9 +95,10 @@ class _IngredientsPageState extends State<IngredientsPage> {
     ),
   );
 
-  Widget _catalogTab() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
+  Widget _catalogTab() => SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
       TextField(
         controller: search,
         onSubmitted: (_) => _load(),
@@ -169,6 +169,7 @@ class _IngredientsPageState extends State<IngredientsPage> {
           );
         },
       ),
-    ],
+      ],
+    ),
   );
 }

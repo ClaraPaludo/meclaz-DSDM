@@ -38,6 +38,49 @@ class _IngredientMixPageState extends State<IngredientMixPage> {
     });
   }
 
+  Future<void> _chooseIngredient(List<String> options) async {
+    final available = options
+        .where((name) => !selectedIngredients.contains(name))
+        .toList();
+
+    final name = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(sheetContext).height * 0.7,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Escolha um ingrediente',
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: available.length,
+                  itemBuilder: (context, index) {
+                    final option = available[index];
+                    return ListTile(
+                      title: Text(option),
+                      onTap: () => Navigator.pop(sheetContext, option),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (name != null && mounted) {
+      setState(() => selectedIngredient = name);
+    }
+  }
+
   void _findDrinks() {
     if (selectedIngredients.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,28 +143,22 @@ class _IngredientMixPageState extends State<IngredientMixPage> {
             return Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: selectedIngredient,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Escolha um ingrediente',
+                  child: OutlinedButton.icon(
+                    onPressed: options.isEmpty
+                        ? null
+                        : () => _chooseIngredient(options),
+                    icon: const Icon(Icons.search),
+                    label: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        selectedIngredient ?? 'Escolha um ingrediente',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    items: options
-                        .where(
-                          (name) =>
-                              !selectedIngredients.contains(name) ||
-                              name == selectedIngredient,
-                        )
-                        .map(
-                          (name) =>
-                              DropdownMenuItem(value: name, child: Text(name)),
-                        )
-                        .toList(),
-                    onChanged: (name) {
-                      setState(() {
-                        selectedIngredient = name;
-                      });
-                    },
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                      alignment: Alignment.centerLeft,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
