@@ -11,6 +11,7 @@ import '../services/cocktail_api.dart';
 import '../widgets/shared.dart';
 // Disponibiliza esta página para abri-la a partir deste arquivo.
 import 'ingredient_detail_page.dart';
+import 'ingredient_mix_page.dart';
 
 // Define um componente com estado: seus dados podem mudar durante o uso.
 class IngredientsPage extends StatefulWidget {
@@ -64,119 +65,110 @@ class _IngredientsPageState extends State<IngredientsPage> {
   // Indica que implementamos um método previsto pela classe de origem do Flutter/Dart.
   @override
   // Descreve a interface. context informa em que lugar da árvore de widgets estamos.
-  Widget build(BuildContext context) => PageBody(
-    // Lista os componentes filhos que serão desenhados dentro deste componente.
+  @override
+  Widget build(BuildContext context) => DefaultTabController(
+    length: 2,
+    child: PageBody(
+      children: [
+        heading('Tudo começa com\num ingrediente.', size: 38),
+        const SizedBox(height: 16),
+        const Text(
+          'Conheça os ingredientes e encontre drinks que usam cada um.',
+        ),
+        const SizedBox(height: 24),
+
+        const TabBar(
+          tabs: [
+            Tab(text: 'Ingredientes'),
+            Tab(text: 'Combinar ingredientes'),
+          ],
+        ),
+        SizedBox(
+          height: 650,
+          child: TabBarView(
+            children: [
+              _catalogTab(),
+              IngredientMixPage(api: widget.api),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _catalogTab() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      heading('Tudo começa com\num ingrediente.', size: 38),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
-      const SizedBox(height: 16),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
-      const Text('Conheça os ingredientes e encontre drinks que usam cada um.'),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
-      const SizedBox(height: 24),
       TextField(
-        // Liga este campo ao controlador que lê e limpa o texto digitado.
         controller: search,
-        // Executa a busca ao confirmar pelo teclado, sem precisar tocar no botão.
         onSubmitted: (_) => _load(),
-        // Configura a ação de pesquisa exibida pelo teclado virtual.
         textInputAction: TextInputAction.search,
-        // Configura a aparência, como fundo, borda ou identificação do campo.
         decoration: const InputDecoration(
-          // Texto que identifica o campo para a pessoa que usa a tela.
           labelText: 'Nome do ingrediente na API, por exemplo: Gin',
-          // Ícone desenhado antes do texto dentro do campo.
           prefixIcon: Icon(Icons.search),
         ),
       ),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
       const SizedBox(height: 12),
       Wrap(
-        // Define a distância entre elementos na mesma linha do Wrap.
         spacing: 12,
-        // Lista os componentes filhos que serão desenhados dentro deste componente.
         children: [
           FilledButton(
-            // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
             onPressed: _load,
-            // Define o único componente filho que ocupa este espaço.
             child: const Text('Buscar ingrediente'),
           ),
           TextButton(
-            // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
             onPressed: () {
-              // Apaga o texto que aparecia no campo de pesquisa.
               search.clear();
               _load();
             },
-            // Define o único componente filho que ocupa este espaço.
             child: const Text('Ver todos'),
           ),
         ],
       ),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
       const SizedBox(height: 24),
-      // Reconstrói esta parte da interface conforme a consulta carrega, termina ou falha.
       FutureBuilder<List<String>>(
-        // Indica qual consulta assíncrona o FutureBuilder deve acompanhar.
         future: results,
-        // snapshot reúne o estado da consulta, os dados recebidos e um possível erro.
         builder: (context, snapshot) {
-          // Enquanto a consulta não terminou, mostra o componente de espera logo abaixo.
-          if (snapshot.connectionState != ConnectionState.done)
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Busy();
-          // Se a consulta falhou, usa a mensagem de erro e a opção de nova tentativa.
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return FeedbackBox(snapshot.error.toString(), retry: _load);
-          // Usa a lista recebida; se for null, usa [] para trabalhar com uma lista vazia.
+          }
+
           final items = snapshot.data ?? [];
-          if (items.isEmpty)
+          if (items.isEmpty) {
             return const FeedbackBox(
               'Nenhum ingrediente encontrado. Tente o nome usado pela API, como Tequila.',
             );
-          // A lista pode ser grande. Os blocos de texto são leves; fotos ficam
-          // na página de detalhe para não baixar centenas de imagens de uma vez.
+          }
+
           return Column(
-            // Alinha os filhos no início do eixo transversal: à esquerda na Column, no topo na Row.
             crossAxisAlignment: CrossAxisAlignment.start,
-            // Lista os componentes filhos que serão desenhados dentro deste componente.
             children: [
               Text('${items.length} ingredientes'),
-              // Construtor: recebe os dados deste componente. const permite instâncias constantes.
               const SizedBox(height: 16),
               Wrap(
-                // Define a distância entre elementos na mesma linha do Wrap.
                 spacing: 10,
-                // Define a distância entre as linhas quando o Wrap quebra o conteúdo.
                 runSpacing: 10,
-                // Lista os componentes filhos que serão desenhados dentro deste componente.
-                children: items
-                    // Transforma cada item da sequência; a função abaixo define o resultado de cada um.
-                    .map(
-                      (name) => ActionChip(
-                        avatar: const Icon(Icons.eco_outlined, size: 18),
-                        label: Text(name),
-                        // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => IngredientDetailPage(
-                              api: widget.api,
-                              name: name,
-                            ),
-                          ),
-                        ),
+                children: items.map((name) {
+                  return ActionChip(
+                    avatar: const Icon(Icons.eco_outlined, size: 18),
+                    label: Text(name),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            IngredientDetailPage(api: widget.api, name: name),
                       ),
-                    )
-                    // Materializa os itens transformados em uma lista que pode ser usada pelo Flutter.
-                    .toList(),
+                    ),
+                  );
+                }).toList(),
               ),
             ],
           );
         },
       ),
-      // Construtor: recebe os dados deste componente. const permite instâncias constantes.
-      const SizedBox(height: 32),
     ],
   );
 }
