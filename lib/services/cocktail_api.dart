@@ -34,6 +34,8 @@ class CocktailApi {
   final String apiKey;
   // Dicionário em memória: cada tipo de filtro aponta para sua lista de opções.
   final Map<String, List<String>> _listCache = {};
+  // Catálogo completo carregado uma vez para permitir combinar ingredientes sem Premium.
+  List<Drink>? _drinkCatalog;
   // Aceita um cliente de testes; se não receber chave, usa 1, própria para estudos.
   CocktailApi({http.Client? client, this.apiKey = '1'})
     // Usa o cliente recebido ou cria um novo cliente HTTP quando ele não foi passado.
@@ -50,15 +52,40 @@ class CocktailApi {
 
     if (names.length < 2) return [];
 
-    final lists = await Future.wait(names.map((name) => filter('i', name)));
+    final requested = names.map(_normalizeIngredient).toSet();
+    final catalog = await _loadDrinkCatalog();
 
-    final commonIds = lists.first.map((drink) => drink.id).toSet();
+    return catalog
+        .where((drink) {
+          final recipeIngredients = drink.ingredients
+              .map((item) => _normalizeIngredient(item.name))
+              .toSet();
+          return requested.every(recipeIngredients.contains);
+        })
+        .map((drink) => drink.summary)
+        .toList();
+  }
 
-    for (final list in lists.skip(1)) {
-      commonIds.retainAll(list.map((drink) => drink.id).toSet());
+  String _normalizeIngredient(String name) =>
+      name.trim().replaceAll('_', ' ').toLowerCase();
+
+  Future<List<Drink>> _loadDrinkCatalog() async {
+    if (_drinkCatalog != null) return _drinkCatalog!;
+
+    final letters = List.generate(26, (index) => String.fromCharCode(97 + index));
+    final rows = <Map<String, dynamic>>[];
+
+    // Consulta poucas letras por vez para não sobrecarregar a API gratuita.
+    for (var start = 0; start < letters.length; start += 5) {
+      final batch = letters.skip(start).take(5);
+      final responses = await Future.wait(
+        batch.map((letter) => _get('search.php', {'f': letter})),
+      );
+      rows.addAll(responses.expand((response) => response));
     }
 
-    return lists.first.where((drink) => commonIds.contains(drink.id)).toList();
+    _drinkCatalog = rows.map(Drink.fromJson).toList();
+    return _drinkCatalog!;
   }
 
   // Método interno comum às consultas. Entrega no futuro uma lista de mapas JSON.

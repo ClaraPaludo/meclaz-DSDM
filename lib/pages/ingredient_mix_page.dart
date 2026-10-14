@@ -15,70 +15,33 @@ class IngredientMixPage extends StatefulWidget {
 }
 
 class _IngredientMixPageState extends State<IngredientMixPage> {
-  late Future<List<String>> ingredientOptions;
   final List<String> selectedIngredients = [];
-
-  String? selectedIngredient;
+  final TextEditingController ingredientInput = TextEditingController();
   Future<List<DrinkSummary>>? results;
 
   @override
-  void initState() {
-    super.initState();
-    ingredientOptions = widget.api.listValues('i');
+  void dispose() {
+    ingredientInput.dispose();
+    super.dispose();
   }
 
   void _addIngredient() {
-    final name = selectedIngredient;
-
-    if (name == null || selectedIngredients.contains(name)) return;
+    final name = ingredientInput.text.trim();
+    if (name.isEmpty) return;
+    if (selectedIngredients.any(
+      (ingredient) => ingredient.toLowerCase() == name.toLowerCase(),
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name já foi adicionado.')),
+      );
+      return;
+    }
 
     setState(() {
       selectedIngredients.add(name);
+      ingredientInput.clear();
       results = null;
     });
-  }
-
-  Future<void> _chooseIngredient(List<String> options) async {
-    final available = options
-        .where((name) => !selectedIngredients.contains(name))
-        .toList();
-
-    final name = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(sheetContext).height * 0.7,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Escolha um ingrediente',
-                  style: Theme.of(sheetContext).textTheme.titleLarge,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: available.length,
-                  itemBuilder: (context, index) {
-                    final option = available[index];
-                    return ListTile(
-                      title: Text(option),
-                      onTap: () => Navigator.pop(sheetContext, option),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (name != null && mounted) {
-      setState(() => selectedIngredient = name);
-    }
   }
 
   void _findDrinks() {
@@ -114,62 +77,27 @@ class _IngredientMixPageState extends State<IngredientMixPage> {
         ),
         const SizedBox(height: 20),
 
-        FutureBuilder<List<String>>(
-          future: ingredientOptions,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Busy();
-            }
-
-            if (snapshot.hasError) {
-              return FeedbackBox(
-                snapshot.error.toString(),
-                retry: () {
-                  setState(() {
-                    ingredientOptions = widget.api.listValues('i');
-                  });
-                },
-              );
-            }
-
-            final options = snapshot.data ?? [];
-
-            if (options.isEmpty) {
-              return const FeedbackBox(
-                'A API não retornou opções de ingredientes.',
-              );
-            }
-
-            return Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: options.isEmpty
-                        ? null
-                        : () => _chooseIngredient(options),
-                    icon: const Icon(Icons.search),
-                    label: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        selectedIngredient ?? 'Escolha um ingrediente',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(56),
-                      alignment: Alignment.centerLeft,
-                    ),
-                  ),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: ingredientInput,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _addIngredient(),
+                decoration: const InputDecoration(
+                  labelText: 'Digite um ingrediente',
+                  hintText: 'Ex.: Tequila',
                 ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  tooltip: 'Adicionar ingrediente',
-                  onPressed: _addIngredient,
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            );
-          },
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filled(
+              tooltip: 'Adicionar ingrediente',
+              onPressed: _addIngredient,
+              icon: const Icon(Icons.add),
+            ),
+          ],
         ),
 
         const SizedBox(height: 16),
