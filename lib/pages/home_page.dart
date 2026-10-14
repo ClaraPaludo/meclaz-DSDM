@@ -46,43 +46,48 @@ class _HomePageState extends State<HomePage> {
           color: orange,
         ),
       ),
-      actions: [
-        TextButton(
-          // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
-          onPressed: () => setState(() => tab = 0),
-          // Define o único componente filho que ocupa este espaço.
-          child: Text(
-            'Drinks',
-            style: TextStyle(
-              // Escolhe o peso da fonte; neste menu, destaca a aba selecionada.
-              fontWeight: tab == 0 ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-        TextButton(
-          // Ação executada ao clicar ou tocar no botão; a função não roda na montagem da tela.
-          onPressed: () => setState(() => tab = 1),
-          // Define o único componente filho que ocupa este espaço.
-          child: Text(
-            'Ingredientes',
-            style: TextStyle(
-              // Escolhe o peso da fonte; neste menu, destaca a aba selecionada.
-              fontWeight: tab == 1 ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: () => setState(() => tab = 2),
-          child: Text(
-            'Descobrir',
-            style: TextStyle(
-              fontWeight: tab == 2 ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-        // Construtor: recebe os dados deste componente. const permite instâncias constantes.
-        const SizedBox(width: 12),
-      ],
+      actions: MediaQuery.sizeOf(context).width < 600
+          ? [
+              PopupMenuButton<int>(
+                tooltip: 'Navegação',
+                onSelected: (value) => setState(() => tab = value),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 0, child: Text('Drinks')),
+                  PopupMenuItem(value: 1, child: Text('Ingredientes')),
+                  PopupMenuItem(value: 2, child: Text('Descobrir')),
+                ],
+              ),
+            ]
+          : [
+              TextButton(
+                onPressed: () => setState(() => tab = 0),
+                child: Text(
+                  'Drinks',
+                  style: TextStyle(
+                    fontWeight: tab == 0 ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() => tab = 1),
+                child: Text(
+                  'Ingredientes',
+                  style: TextStyle(
+                    fontWeight: tab == 1 ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() => tab = 2),
+                child: Text(
+                  'Descobrir',
+                  style: TextStyle(
+                    fontWeight: tab == 2 ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
     ),
     // IndexedStack preserva a pesquisa quando o usuário muda de aba.
     body: IndexedStack(
