@@ -47,56 +47,44 @@ flutter build web
 
 Os testes usam respostas simuladas, sem depender da disponibilidade da API. A compilação web é uma verificação adicional, não é necessária a cada alteração.
 
-### Android, em uma segunda etapa
+### Executar no emulador Android
 
-A entrega está preparada para começar no navegador. Para adicionar a estrutura Android, execute na pasta do projeto:
-
-```bash
-flutter create --platforms=android --project-name meclaz_drinks .
-```
-
-Depois, em `android/app/src/main/AndroidManifest.xml`, adicione esta linha diretamente dentro de `<manifest>`, antes de `<application>`:
-
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-```
-
-Instale/configure o Android SDK e um emulador ou conecte um aparelho com depuração USB, seguindo o guia oficial do Flutter. Depois execute:
+Com o emulador aberto, execute na pasta que contém `pubspec.yaml`:
 
 ```bash
+flutter pub get
 flutter devices
 flutter run -d ID_DO_DISPOSITIVO
 ```
-
-Troque `ID_DO_DISPOSITIVO` pelo identificador exibido em `flutter devices`. O projeto não precisa de banco de dados, login ou servidor próprio.
 
 ## 3. O que já funciona
 
 | Área | Comportamento |
 | --- | --- |
-| Início / Drinks | Carrega os drinks da letra A; a foto de destaque vem da primeira resposta da API. |
-| Busca | Consulta drinks pelo nome ao clicar em Buscar ou pressionar Enter. |
-| A–Z | Consulta os drinks pela primeira letra. |
-| Filtros | Categoria, presença de álcool, copo ou ingrediente. Um filtro por vez. |
-| Receita | Busca os detalhes por ID ao abrir um cartão. Mostra foto, categoria, copo, ingredientes, medidas e preparo. |
-| Ingredientes | Carrega o catálogo da API e permite buscar ingrediente pelo nome. |
-| Detalhe do ingrediente | Mostra foto, descrição, tipo, álcool e teor alcoólico quando informados. |
-| Drinks por ingrediente | O botão “Ver drinks com…” carrega receitas que usam o ingrediente. |
-| Estados | Carregamento, ausência de resultados, erro, tentar novamente e imagem indisponível. |
+| Drinks | Lista drinks e permite pesquisar pelo nome ou pela letra inicial. |
+| Filtros | Filtra por categoria, presença de álcool, copo ou ingrediente, um critério por vez. |
+| Receita | Mostra foto, categoria, copo, ingredientes, medidas e preparo. |
+| Ingredientes | Permite pesquisar e abrir os detalhes de um ingrediente. |
+| Drinks por ingrediente | “Ver drinks com…” procura no catálogo completo as receitas que usam aquele ingrediente. |
+| Combinar ingredientes | Permite digitar dois ou mais ingredientes e procura receitas que contenham todos eles. |
+| Descobrir | Mostra um drink surpresa e permite sortear outro. |
+| Estados | Mostra carregamento, erros, resultados vazios e permite tentar novamente. |
 
-A área **Descobrir**, o sorteio **Surpreenda-me** e as funções Premium ficaram para uma próxima etapa. Esta é a base funcional, com o visual simplificado para facilitar o estudo. Na lista de ingredientes, usamos botões com nomes; as fotos aparecem nos detalhes, evitando baixar centenas de imagens de uma só vez.
+Os nomes de ingredientes precisam corresponder aos usados pela API, que estão principalmente em inglês. Por exemplo: `Tequila` e `Lime juice`. O aplicativo não traduz automaticamente os nomes digitados.
 
 ## 4. Entendendo os arquivos
 
 | Arquivo | Responsabilidade |
 | --- | --- |
 | `lib/main.dart` | Inicia o aplicativo, define idioma/tema e cria o serviço da API. |
-| `lib/pages/home_page.dart` | Alterna entre Drinks e Ingredientes e preserva a busca entre abas. |
+| `lib/pages/home_page.dart` | Controla a navegação entre Drinks, Ingredientes e Descobrir. |
 | `lib/pages/drinks_page.dart` | Campo de busca, filtros, letras, resultados e controle de carregamento. |
 | `lib/pages/drink_detail_page.dart` | Exibe a receita completa e abre ingredientes ao tocar neles. |
 | `lib/pages/ingredients_page.dart` | Lista e busca ingredientes. |
 | `lib/pages/ingredient_detail_page.dart` | Exibe informações do ingrediente e drinks relacionados. |
-| `lib/services/cocktail_api.dart` | Monta URLs, faz GET, lê JSON, trata falhas e mantém as listas em memória. |
+| `lib/services/cocktail_api.dart` | Consulta a API, interpreta respostas, trata falhas e mantém dados em cache. Também busca no catálogo por letra para localizar drinks por um ou mais ingredientes. |
+| `lib/pages/discover_page.dart` | Mostra o drink surpresa e permite sortear outro. |
+| `lib/pages/ingredient_mix_page.dart` | Recebe ingredientes digitados e mostra drinks que usam todos eles. |
 | `lib/models/drink.dart` | Representa resumo, receita completa e pares de ingrediente/medida. |
 | `lib/models/ingredient.dart` | Representa os detalhes de um ingrediente. |
 | `lib/widgets/shared.dart` | Componentes reutilizados: cartões, imagens, títulos e mensagens. Também contém as cores. |
@@ -104,7 +92,7 @@ A área **Descobrir**, o sorteio **Surpreenda-me** e as funções Premium ficara
 | `test/` | Testes automatizados de dados, serviço e interface. |
 | `pubspec.yaml` | Nome do projeto, requisitos e dependências. |
 
-A pasta `web` contém a estrutura necessária para executar no navegador; a pasta `android` pode ser gerada na etapa opcional acima. Para estudar as funcionalidades, comecem pela pasta `lib`.
+A pasta `web` contém a estrutura para executar no navegador, e a pasta `android` contém a estrutura para executar no emulador ou em um aparelho Android.
 
 ### Ordem de leitura sugerida
 
@@ -159,6 +147,9 @@ Base: `https://www.thecocktaildb.com/api/json/v1/1/`
 | `searchIngredients(nome)` | `search.php?i=nome` | Pesquisa de ingredientes. |
 | `ingredientByName(nome)` | `search.php?i=nome` | Usa a pesquisa para abrir um ingrediente. |
 | `ingredientById(id)` | `lookup.php?iid=id` | Disponível no serviço para estudar a consulta por ID. |
+| `randomDrink()` | `random.php` | Busca um drink surpresa. |
+| `drinksByIngredient(nome)` | Busca por letra (`search.php?f=...`) | Localiza todos os drinks que usam um ingrediente. |
+| `filterByIngredients(nomes)` | Busca por letra (`search.php?f=...`) | Localiza drinks que contêm todos os ingredientes informados. |
 
 A interface navega pelos ingredientes usando seus nomes porque o catálogo `list.php?i=list` não entrega IDs. O método por ID está implementado e testado, mas não precisa de um campo de ID na tela.
 
@@ -167,13 +158,15 @@ A interface navega pelos ingredientes usando seus nomes porque o catálogo `list
 - A chave `1` é a chave de testes/estudo indicada no PDF. Não é uma chave de produção própria.
 - A API é somente leitura. Não há cadastro, edição ou exclusão de receitas nesta base.
 - O resultado de `filter.php` tem apenas nome, ID e imagem. A receita completa exige `lookup.php`.
-- Um filtro substitui a busca anterior. Não estamos simulando uma combinação de filtros que a API gratuita não oferece.
+- O filtro múltiplo direto da TheCocktailDB é Premium. Para permitir a combinação com a chave gratuita de estudo, o aplicativo consulta o catálogo por letra e confere os ingredientes completos de cada receita.
+- A primeira busca por ingrediente ou combinação pode demorar mais, porque carrega o catálogo. Depois, os dados ficam em cache enquanto o aplicativo está aberto.
+- Digite os ingredientes com os nomes usados pela API, como `Tequila` e `Lime juice`. Não há tradução automática de português para inglês.
 - A interface e os rótulos conhecidos estão em português. Nomes de ingredientes, receitas e textos descritivos permanecem como a API os retorna. Ela não oferece um campo de preparo em português.
-- Pesquise pelo nome conhecido pela API, como **Gin**, **Margarita** ou **Lime**. O aplicativo não traduz automaticamente o que foi digitado.
+- Pesquise pelo nome conhecido pela API, como **Gin**, **Margarita** ou **Lime juice**. O aplicativo não traduz automaticamente o que foi digitado.
 - IDs continuam sendo `String`. Campos vazios ou `null` são tratados sem inventar informações.
 - Ingredientes e medidas usam os mesmos índices, de 1 a 15. Medida ausente aparece como “Medida não informada”.
 - `drinks: null` e `drinks: "None Found"` viram listas vazias.
-- As opções dos filtros ficam em cache durante a execução. As receitas continuam sendo consultadas na API.
+- As opções dos filtros e o catálogo de drinks ficam em cache durante a execução. Ao abrir uma receita, os detalhes são consultados por ID na API.
 - A chamada tem limite de 20 segundos. Sem internet ou em caso de falha, a tela apresenta uma mensagem e permite tentar novamente.
 - Se duas buscas forem feitas rapidamente, um contador impede que a resposta antiga substitua a mais recente.
 - As listas da API não têm paginação implementada nesta base. Grandes listas podem ser extensas; isso pode ser refinado depois.
@@ -201,7 +194,7 @@ O arquivo `VALIDACAO.md` registra o que foi efetivamente verificado nesta entreg
 
 ## Como ler os comentários desta versão
 
-O nome agora é **Meclaz**. A lógica, os endpoints, as cores, os tamanhos e as funcionalidades foram preservados. As alterações no Dart são a troca do nome e comentários para estudo.
+Este README descreve o estado atual do Meclaz. O projeto inclui as telas Drinks, Ingredientes e Descobrir, além da combinação de ingredientes e da consulta de drinks por ingrediente.
 
 - `//` inicia uma explicação até o fim da linha; o aplicativo não executa esse texto.
 - `final` impede reatribuir a variável; uma lista guardada nela ainda pode ser modificada.

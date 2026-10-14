@@ -66,6 +66,21 @@ class CocktailApi {
         .toList();
   }
 
+  Future<List<DrinkSummary>> drinksByIngredient(String ingredient) async {
+    final requested = _normalizeIngredient(ingredient);
+    if (requested.isEmpty) return [];
+
+    final catalog = await _loadDrinkCatalog();
+    return catalog
+        .where(
+          (drink) => drink.ingredients.any(
+            (item) => _normalizeIngredient(item.name) == requested,
+          ),
+        )
+        .map((drink) => drink.summary)
+        .toList();
+  }
+
   String _normalizeIngredient(String name) =>
       name.trim().replaceAll('_', ' ').toLowerCase();
 

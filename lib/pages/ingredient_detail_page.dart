@@ -148,7 +148,7 @@ class _IngredientDetailPageState extends State<IngredientDetailPage> {
           // Ação executada quando o botão é tocado.
           onPressed: () {
             setState(() {
-              drinks = widget.api.filter('i', widget.name);
+              drinks = widget.api.drinksByIngredient(widget.name);
             });
           },
           // Texto exibido no botão.
@@ -173,7 +173,7 @@ class _IngredientDetailPageState extends State<IngredientDetailPage> {
                   snapshot.error.toString(),
                   // Função chamada pelo botão Tentar novamente quando houve uma falha.
                   retry: () => setState(
-                    () => drinks = widget.api.filter('i', widget.name),
+                    () => drinks = widget.api.drinksByIngredient(widget.name),
                   ),
                 );
               // Usa a lista recebida; se for null, usa [] para trabalhar com uma lista vazia.
